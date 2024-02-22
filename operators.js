@@ -34,9 +34,26 @@ const interval = (ms) => {
             clearInterval(_intervalId);
         }
     })
-}
+};
+
+/**
+ * 
+ * @param {Function} fn
+ * @returns {TransformStream} 
+ */
+const map = (fn) => {
+    return new TransformStream({
+        //ao inicializar o objeto -> start
+        //a medida que recebe os dados -> transform
+        transform(chunk, controller){
+            controller.enqueue(fn(chunk))
+        }
+    })
+};
+//TransformStream -> Writeable e Readble
 
 export {
     fromEvent,
-    interval
+    interval,
+    map
 }

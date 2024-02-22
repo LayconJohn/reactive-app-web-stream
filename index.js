@@ -1,8 +1,21 @@
-import { fromEvent, interval } from "./operators.js";
+import { fromEvent, interval, map } from "./operators.js";
 
 const canvas = document.getElementById("canvas");
 const clearBtn = document.getElementById("clearBtn");
 const ctx = canvas.getContext('2d');
+
+const mouseEvents = {
+    down: 'mousedown',
+    move: 'mousemove',
+    up: 'mouseup',
+    leave: 'mouseleave',
+
+    touchStart: 'touchstart',
+    touchmove: 'touchmove',
+    touchend: 'touchend',
+
+    click: 'click'
+}
 
 const resetCanvas = (width, height) => {
     const parent = canvas.parentElement;
@@ -15,11 +28,37 @@ const resetCanvas = (width, height) => {
 
 }
 
+const getMousePosition = (canvasDOM, eventValue) => {
+    const rect = canvasDOM.getBoundingClientRect()
+    return {
+        x: eventValue.clientX - rect.left,
+        y: eventValue.clientY - rect.top
+    }
+};
+
 resetCanvas()
 
-fromEvent(canvas, 'mousedown')
+const touchToMouse = (touchEvent, mouseEvent) => {
+    const [touch] = touchEvent.touches.length ?
+        touchEvent.touches :
+        touchEvent.changedTouches
+
+    return new MouseEvent(mouseEvent, {
+        clientX: touch.clientX,
+        clientY: touch.clientY
+    })
+};
+
+//pipeTo: Escrever dados. pipetrought -> Tranformar dados
+
+fromEvent(canvas, mouseEvents.touchStart)
+    .pipeThrough(map(e => touchToMouse(e, mouseEvents.touchStart)))
     .pipeTo(new WritableStream({
-        write(chunk) {
-            console.log('chunk', chunk)
+        write(mouseDown) {
+            const position = getMousePosition(canvas, mouseDown)
+            
+            ctx.moveTo(0, 0)
+            ctx.lineTo(position.x, position.y)
+            ctx.stroke()
         }
     }))
