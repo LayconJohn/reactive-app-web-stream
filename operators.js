@@ -17,6 +17,26 @@ const fromEvent = (target, eventName) => {
 
 };
 
+/**
+ * 
+ * @param {Number} ms
+ * @returns {ReadableStream} 
+ */
+const interval = (ms) => {
+    let _intervalId
+    return new ReadableStream({
+        start(controller){
+            _intervalId = setInterval(() => {
+                controller.enqueue(Date.now())
+            }, ms);
+        },
+        cancel(){
+            clearInterval(_intervalId);
+        }
+    })
+}
+
 export {
     fromEvent,
+    interval
 }

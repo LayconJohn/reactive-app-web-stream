@@ -1,4 +1,4 @@
-import { fromEvent } from "./operators.js";
+import { fromEvent, interval } from "./operators.js";
 
 const canvas = document.getElementById("canvas");
 const clearBtn = document.getElementById("clearBtn");
@@ -17,8 +17,9 @@ const resetCanvas = (width, height) => {
 
 resetCanvas()
 
-fromEvent(canvas, 'mousedown').pipeTo(new WritableStream({
-    write(chunk) {
-        console.log('chunk', chunk)
-    }
-}))
+fromEvent(canvas, 'mousedown')
+    .pipeTo(new WritableStream({
+        write(chunk) {
+            console.log('chunk', chunk)
+        }
+    }))
