@@ -5,6 +5,7 @@
  */
 const fromEvent = (target, eventName) => {
     let _listener
+    //ReadableStream -> Fonte de dados
     return new ReadableStream({
         start(controller) {
             _listener = (e) => controller.enqueue(e);
@@ -52,8 +53,32 @@ const map = (fn) => {
 };
 //TransformStream -> Writeable e Readble
 
+/**
+ * @typedef {ReadableStream |TransformStream} Stream
+ * @param {Stream[]} streams 
+ * @returns {ReadableStream}
+ */
+const combine = (streams) => {
+    return new ReadableStream({
+        async start(controller) {
+            for(const stream of streams) {
+                const reader = (stream.readable || stream).getReader()
+                async function read() {
+                    const {value, done} = await reader.read()
+                    if (done) return
+                    controller.enqueue(value)
+                    return read()
+                }
+
+                return read()
+            }
+        }
+    })
+};
+
 export {
     fromEvent,
     interval,
-    map
+    map,
+    combine
 }
