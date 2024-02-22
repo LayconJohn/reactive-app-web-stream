@@ -1,4 +1,4 @@
-import { fromEvent, interval, map, combine } from "./operators.js";
+import { fromEvent, interval, map, merge } from "./operators.js";
 
 const canvas = document.getElementById("canvas");
 const clearBtn = document.getElementById("clearBtn");
@@ -49,11 +49,19 @@ const touchToMouse = (touchEvent, mouseEvent) => {
     })
 };
 
-//pipeTo: Escrever dados. pipetrought -> Tranformar dados
-combine([
+merge([
     fromEvent(canvas, mouseEvents.down),
     fromEvent(canvas, mouseEvents.touchStart).pipeThrough(map(e => touchToMouse(e, mouseEvents.touchStart)))
 ])
+    .pipeTo(new WritableStream({
+        write(mouseDown) {
+            const position = getMousePosition(canvas, mouseDown)
+            
+            ctx.moveTo(0, 0)
+            ctx.lineTo(position.x, position.y)
+            ctx.stroke()
+        }
+    }))
 
 // fromEvent(canvas, mouseEvents.touchStart)
 //     .pipeThrough(map(e => touchToMouse(e, mouseEvents.touchStart)))

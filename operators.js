@@ -58,7 +58,7 @@ const map = (fn) => {
  * @param {Stream[]} streams 
  * @returns {ReadableStream}
  */
-const combine = (streams) => {
+const merge = (streams) => {
     return new ReadableStream({
         async start(controller) {
             for(const stream of streams) {
@@ -76,9 +76,11 @@ const combine = (streams) => {
     })
 };
 
+
+
 export {
     fromEvent,
     interval,
     map,
-    combine
+    merge
 }
