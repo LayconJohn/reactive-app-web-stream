@@ -102,10 +102,34 @@ const switchMap = (fn, options = {pairwise: true}) => {
     })
 }
 
+/**
+ * 
+ * @param {ReadableStream | TransformStream} stream
+ *  @returns {TransformStream}
+ */
+const takeUntil = (stream) => {
+    
+    const readAndTerminate = async (stream, controller) => {
+        const reader = (stream.readable || stream).getReader()
+        const {value} = await reader.read()
+        controller.enqueue(value)
+        controller.terminate()
+    }
+    return new TransformStream({
+        start(controller) {
+            readAndTerminate(stream, controller)
+        },
+        transform(chunk, controller) {
+            controller.enqueue(chunk)
+        }
+    })
+};
+
 export {
     fromEvent,
     interval,
     map,
     merge,
-    switchMap
+    switchMap,
+    takeUntil
 }
