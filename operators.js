@@ -47,7 +47,7 @@ const map = (fn) => {
         //ao inicializar o objeto -> start
         //a medida que recebe os dados -> transform
         transform(chunk, controller){
-            controller.enqueue(fn(chunk))
+            controller.enqueue(fn.bind(fn)(chunk))
         }
     })
 };
@@ -76,11 +76,36 @@ const merge = (streams) => {
     })
 };
 
+/**
+ * @typedef {function(): ReadableStream | TransformStream} StreamFunction
+ * @param {StreamFunction} fn 
+ * @param {object} options
+ * @param {boolean} options.pairwise 
+ * @returns {TransformStream} 
+*/
+const switchMap = (fn, options = {pairwise: true}) => {
+    return new TransformStream({
+        async transform(chunk, controller) {
+            const stream = fn.bind(fn)(chunk)
+            const reader = (stream.readable || stream).getReader()
+        
+            async function read() {
+                const {value, done} = await reader.read()
+                if (done) return
+                const result = options.pairwise ? [chunk, value] : value
+                controller.enqueue(result)
+                return read()
+            }
 
+            return read()
+        }
+    })
+}
 
 export {
     fromEvent,
     interval,
     map,
-    merge
+    merge,
+    switchMap
 }
