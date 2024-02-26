@@ -78,7 +78,7 @@ merge([
         const [from, to] = [this._lastPosition, mouseMove]
             .map(item => {
                 return getMousePosition(canvas, item)})
-        this._lastPosition = mouseMove
+        this._lastPosition = mouseMove.type === mouseEvents.up ? null : mouseMove
         
         return {from, to}
     }))

@@ -66,11 +66,12 @@ const merge = (streams) => {
                 async function read() {
                     const {value, done} = await reader.read()
                     if (done) return
+                    if (!controller.desiredSize) return
                     controller.enqueue(value)
                     return read()
                 }
 
-                return read()
+                read()
             }
         }
     })
