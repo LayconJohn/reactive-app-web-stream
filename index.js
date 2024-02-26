@@ -38,6 +38,21 @@ const getMousePosition = (canvasDOM, eventValue) => {
 
 resetCanvas()
 
+const sleep = (ms) => new Promise(r => setTimeout(r, ms))
+
+const store = {
+    db: [],
+    get() {
+        return this.db
+    },
+    set(item) {
+        this.db.unshift(item)
+    },
+    clear() {
+        this.db.length = 0
+    }
+}
+
 const touchToMouse = (touchEvent, mouseEvent) => {
     const [touch] = touchEvent.touches.length ?
         touchEvent.touches :
@@ -84,7 +99,7 @@ merge([
     }))
     .pipeTo(new WritableStream({
         write({ from, to }) {
-            
+            store.set({from, to})
             ctx.moveTo(from.x, from.y)
             ctx.lineTo(to.x, to.y)
             ctx.stroke()
@@ -102,3 +117,23 @@ merge([
 //             ctx.stroke()
 //         }
 //     }))
+
+fromEvent(clearBtn, mouseEvents.click)
+    .pipeTo(
+        new WritableStream({
+            async write(chunk) {
+                ctx.beginPath()
+                ctx.strokeStyle = 'white'
+
+                for (const { from, to } of store.get()) {
+                    ctx.moveTo(from.x, from.y)
+                    ctx.lineTo(to.x, to.y)
+                    ctx.stroke()
+
+                    await sleep(5)
+                }
+                store.clear()
+                resetCanvas(canvas.width, canvas.height)
+            }
+        })
+    )
